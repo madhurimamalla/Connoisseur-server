@@ -19,8 +19,10 @@ import javax.persistence.OneToMany;
 
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 
 @Entity
+@EnableAutoConfiguration
 public class Movie {
 
 	@Id
@@ -77,6 +79,9 @@ public class Movie {
 
 	@OneToMany(mappedBy = "movie", cascade = { CascadeType.MERGE, CascadeType.PERSIST })
 	private List<MovieCrew> crew = new ArrayList<>();
+	
+	@OneToMany(mappedBy = "source", fetch = FetchType.LAZY)
+	private List<SimilarityRelation> similarMovies = new ArrayList<>();
 
 	public Movie() {
 	}
@@ -219,6 +224,14 @@ public class Movie {
 	@Override
 	public String toString() {
 		return title + " [" + tmdbMovieID + "]";
+	}
+
+	public List<SimilarityRelation> getSimilarMovies() {
+		return similarMovies;
+	}
+
+	public void setSimilarMovies(List<SimilarityRelation> similarMovies) {
+		this.similarMovies = similarMovies;
 	}
 
 }

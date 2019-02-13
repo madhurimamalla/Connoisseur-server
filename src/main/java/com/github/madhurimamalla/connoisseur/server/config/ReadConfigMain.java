@@ -1,4 +1,4 @@
-package com.github.madhurimamalla.connoisseur.server.configproperties;
+package com.github.madhurimamalla.connoisseur.server.config;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

@@ -1,11 +1,13 @@
 package com.github.madhurimamalla.connoisseur.server.similarity;
 
-import java.util.Iterator;
-
 public interface SimilarityAlgorithm {
 
-	Iterator<SimilarityResult> run(MovieProvider movieProvider, String genreName);
-
-	Iterator<SimilarityResult> run(MovieProvider movieProvider);
+	/**
+	 * Runs similarity inference algorithm on a given set of movies.
+	 * 
+	 * @param movieProvider 
+	 * @param publisher
+	 */
+	void run(MovieProvider movieProvider, SimilarityResultPublisher publisher);
 
 }

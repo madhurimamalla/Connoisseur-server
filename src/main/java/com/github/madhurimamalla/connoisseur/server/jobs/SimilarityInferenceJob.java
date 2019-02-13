@@ -1,7 +1,5 @@
 package com.github.madhurimamalla.connoisseur.server.jobs;
 
-import java.util.Iterator;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +10,8 @@ import com.github.madhurimamalla.connoisseur.server.similarity.KeywordBasedSimil
 import com.github.madhurimamalla.connoisseur.server.similarity.MovieProvider;
 import com.github.madhurimamalla.connoisseur.server.similarity.MovieProviderImpl;
 import com.github.madhurimamalla.connoisseur.server.similarity.SimilarityAlgorithm;
-import com.github.madhurimamalla.connoisseur.server.similarity.SimilarityResult;
+import com.github.madhurimamalla.connoisseur.server.similarity.SimilarityResultPublisher;
+import com.github.madhurimamalla.connoisseur.server.similarity.SimilarityResultPublisherImpl;
 
 @Service
 public class SimilarityInferenceJob {
@@ -22,17 +21,10 @@ public class SimilarityInferenceJob {
 	@Autowired
 	MovieService movieService;
 
-	public Iterator<SimilarityResult> run() {
-
+	public void run() {
 		MovieProvider mp = new MovieProviderImpl(movieService);
 		SimilarityAlgorithm simAlgo = new KeywordBasedSimilarityAlgorithm();
-		return simAlgo.run(mp);
-	}
-
-	public Iterator<SimilarityResult> run(String genreName) {
-		
-		MovieProvider mp = new MovieProviderImpl(movieService);
-		SimilarityAlgorithm simAlgo = new KeywordBasedSimilarityAlgorithm();
-		return simAlgo.run(mp, genreName);
+		SimilarityResultPublisher publisher = new SimilarityResultPublisherImpl(movieService);
+		simAlgo.run(mp, publisher);
 	}
 }

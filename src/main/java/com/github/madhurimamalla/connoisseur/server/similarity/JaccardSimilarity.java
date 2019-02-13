@@ -7,7 +7,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class JaccardSimilarity<T> {
+public class JaccardSimilarity {
 
 	private static final Logger LOG = LoggerFactory.getLogger(JaccardSimilarity.class);
 

@@ -35,6 +35,13 @@ import com.github.madhurimamalla.connoisseur.server.service.MovieService;
 import com.github.madhurimamalla.connoisseur.server.util.Broker;
 import com.github.madhurimamalla.connoisseur.server.util.Message;
 
+/**
+ * Movie Downloader is the consumer thread which decodes the message and
+ * downloads the movie. It also persists the movie object in the database
+ * 
+ * @author reema
+ *
+ */
 public class MovieDownloader implements Runnable {
 
 	private static final Logger LOG = LoggerFactory.getLogger(MovieDownloader.class);
@@ -43,11 +50,14 @@ public class MovieDownloader implements Runnable {
 
 	Broker<Long> broker;
 
+	private String name;
+
 	MovieDBClient client = new TMDBClient();
 
 	Map<Long, Person> perMoviePersonMap = new HashMap<>();
 
-	public MovieDownloader(Broker<Long> broker, MovieService movieService) {
+	public MovieDownloader(String name, Broker<Long> broker, MovieService movieService) {
+		this.name = name;
 		this.broker = broker;
 		this.movieService = movieService;
 	}
@@ -55,6 +65,7 @@ public class MovieDownloader implements Runnable {
 	@Override
 	public void run() {
 		Long id = null;
+		Thread.currentThread().setName(name);
 		while (true) {
 			try {
 				Message<Long> message = broker.take();
@@ -66,6 +77,8 @@ public class MovieDownloader implements Runnable {
 				movieService.addMovie(m);
 			} catch (MovieNotFoundException e) {
 				LOG.info("Movie with id [" + id + "] not found.");
+			} catch (InterruptedException e) {
+				LOG.info("Movie download thread interrupted.");
 			} catch (Exception e) {
 				e.printStackTrace();
 				break;
