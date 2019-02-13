@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.madhurimamalla.connoisseur.server.configproperties.ReadConfigMain;
+import com.github.madhurimamalla.connoisseur.server.config.ReadConfigMain;
 import com.github.madhurimamalla.connoisseur.server.moviedb.client.MovieDBClient;
 import com.github.madhurimamalla.connoisseur.server.moviedb.client.MovieNotFoundException;
 import com.github.madhurimamalla.connoisseur.server.moviedb.client.rest.model.CreditsRM;

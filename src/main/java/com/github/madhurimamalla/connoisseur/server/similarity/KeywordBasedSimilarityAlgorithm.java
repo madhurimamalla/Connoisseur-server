@@ -2,7 +2,6 @@ package com.github.madhurimamalla.connoisseur.server.similarity;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -17,55 +16,38 @@ public class KeywordBasedSimilarityAlgorithm implements SimilarityAlgorithm {
 	private static final Logger LOG = LoggerFactory.getLogger(KeywordBasedSimilarityAlgorithm.class);
 
 	@Override
-	public Iterator<SimilarityResult> run(MovieProvider movieProvider, String genreName) {
-
-		Set<Movie> allMovies = movieProvider.findAllMoviesByGenre(genreName);
-		return findSimilarityResults(allMovies);
-	}
-
-	@Override
-	public Iterator<SimilarityResult> run(MovieProvider movieProvider) {
+	public void run(MovieProvider movieProvider, SimilarityResultPublisher publisher) {
 
 		Set<Movie> allMovies = movieProvider.getAllMovies();
-		return findSimilarityResults(allMovies);
-	}
 
-	private Iterator<SimilarityResult> findSimilarityResults(Set<Movie> moviesList) {
-
-		Set<SimilarityResult> results = new HashSet<>();
+		List<Movie> moviesList = new ArrayList<>(allMovies);
 		long count = 0;
-		for (Movie outerM : moviesList) {
-			List<SimilarMovie> similarMovies = new ArrayList<SimilarMovie>();
-			if (outerM.getKeywords().isEmpty() || outerM.getKeywords() == null) {
+		for (int i = 0; i < moviesList.size(); i++) {
+			Movie outerMovie = moviesList.get(i);
+			if (outerMovie.getKeywords().isEmpty() || outerMovie.getKeywords() == null) {
 				continue;
 			}
-			for (Movie innerM : moviesList) {
+			List<SimilarMovie> similarMovies = new ArrayList<SimilarMovie>();
+			for (int j = i + 1; j < moviesList.size(); j++) {
 				float similarityScore = 0;
-				if (innerM.equals(outerM)) {
-					continue;
-				}
-				else if (innerM.getKeywords().isEmpty() || innerM.getKeywords() == null) {
+				Movie innerMovie = moviesList.get(j);
+				if (innerMovie.getKeywords().isEmpty() || innerMovie.getKeywords() == null) {
 					similarityScore = 0;
 				} else {
-					similarityScore = JaccardSimilarity.compute(new HashSet<>(innerM.getKeywords()),
-							new HashSet<>(outerM.getKeywords()));
+					similarityScore = JaccardSimilarity.compute(new HashSet<>(innerMovie.getKeywords()),
+							new HashSet<>(outerMovie.getKeywords()));
 				}
 				if (similarityScore < 0.1f) {
 					continue;
 				}
 				count++;
-				SimilarMovie similarMovie = new SimilarMovie(innerM, similarityScore);
-				similarMovies.add(similarMovie);
+				similarMovies.add(new SimilarMovie(innerMovie, similarityScore));
 			}
-			// TODO Revisit this because we aren't saving similarity if there's
-			// no similarity found for a movie
 			if (similarMovies.size() > 0) {
-				SimilarityResult simResult = new SimilarityResult(outerM, similarMovies);
-				results.add(simResult);
+				publisher.saveResult(new SimilarityResult(outerMovie, similarMovies));
 			}
 		}
-		LOG.info("Total similarity results found: " + (count / 2));
-		return results.iterator();
+		LOG.info("Total similarity results found: " + count);
 	}
 
 }

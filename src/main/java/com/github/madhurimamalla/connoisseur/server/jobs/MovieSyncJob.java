@@ -1,5 +1,11 @@
 package com.github.madhurimamalla.connoisseur.server.jobs;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,49 +27,51 @@ public class MovieSyncJob {
 
 		Broker<Long> broker = new Broker<>();
 
-		Thread pt = new Thread(new Runnable() {
+		try {
+			ExecutorService threadPool = Executors.newFixedThreadPool(6);
 
-			@Override
-			public void run() {
-				for (long i = 1; i <= 4; i++) {
-					try {
-						broker.put(new Message<>(i));
-					} catch (InterruptedException e) {
-						e.printStackTrace();
+			threadPool.execute(new MovieDownloader("C1", broker, movieService));
+			threadPool.execute(new MovieDownloader("C2", broker, movieService));
+			threadPool.execute(new MovieDownloader("C3", broker, movieService));
+			threadPool.execute(new MovieDownloader("C4", broker, movieService));
+			threadPool.execute(new MovieDownloader("C5", broker, movieService));
+
+			/**
+			 * Initiate a producer thread to populate the shared queue with movie
+			 * ids.
+			 */
+			Future<?> producerStatus = threadPool.submit(new Runnable() {
+
+				@Override
+				public void run() {
+					for (long i = 1; i <= 1000; i++) {
+						try {
+							broker.put(new Message<>(i));
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+							LOG.error("Producer thread interrupted.");
+						}
 					}
 				}
+
+			});
+
+			producerStatus.get();
+
+			broker.shutdown(5);
+
+			threadPool.shutdown();
+			try {
+				if (!threadPool.awaitTermination(600, TimeUnit.SECONDS)) {
+					threadPool.shutdownNow();
+				}
+			} catch (InterruptedException ex) {
+				threadPool.shutdownNow();
+				Thread.currentThread().interrupt();
 			}
 
-		}, "PT1");
-
-		MovieDownloader d1 = new MovieDownloader(broker, movieService);
-		MovieDownloader d2 = new MovieDownloader(broker, movieService);
-		MovieDownloader d3 = new MovieDownloader(broker, movieService);
-		MovieDownloader d4 = new MovieDownloader(broker, movieService);
-		MovieDownloader d5 = new MovieDownloader(broker, movieService);
-
-		Thread t1 = new Thread(d1, "T1");
-		Thread t2 = new Thread(d2, "T2");
-		Thread t3 = new Thread(d3, "T3");
-		Thread t4 = new Thread(d4, "T4");
-		Thread t5 = new Thread(d5, "T5");
-
-		pt.start();
-
-		t1.start();
-		t2.start();
-		t3.start();
-		t4.start();
-		t5.start();
-
-		pt.join();
-		broker.shutdown(5);
-
-		t1.join();
-		t2.join();
-		t3.join();
-		t4.join();
-		t5.join();
-
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		}
 	}
 }
