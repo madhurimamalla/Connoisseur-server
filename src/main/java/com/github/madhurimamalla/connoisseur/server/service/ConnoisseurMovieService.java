@@ -5,9 +5,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
+import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.Query;
 import javax.transaction.Transactional;
 
+import org.hibernate.Criteria;
+import org.hibernate.criterion.Projections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -113,5 +117,13 @@ public class ConnoisseurMovieService implements MovieService {
 	@Transactional
 	public SimilarityRelation addSimilarityRelation(SimilarityRelation sr) {
 		return srDAO.save(sr);
+	}
+
+	@Override
+	public long findMaxId() {
+		EntityManager em = emf.createEntityManager();
+		Query query = em.createQuery("select max (tmdbMovieID) from Movie");
+		Object id =  query.getFirstResult();
+		return (long) id;
 	}
 }

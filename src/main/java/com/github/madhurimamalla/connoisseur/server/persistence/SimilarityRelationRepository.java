@@ -9,6 +9,6 @@ import com.github.madhurimamalla.connoisseur.server.model.SimilarityRelation;
 
 public interface SimilarityRelationRepository extends CrudRepository<SimilarityRelation, SimilarityRelation.Id> {
 	
-	List<Movie> findBySource(Movie movie);
+	List<SimilarityRelation> findBySource(Movie movie);
 
 }

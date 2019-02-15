@@ -107,4 +107,13 @@ public class SimilarityRelation {
 	public float getSimilarityScore() {
 		return similarityScore;
 	}
+
+	public Movie getSource() {
+		return source;
+	}
+
+	public Movie getTarget() {
+		return target;
+	}
+
 }
