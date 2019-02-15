@@ -5,12 +5,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-public class ReadConfigMain {
+public class ReadConfig {
 
 	private InputStream inputStream;
 	private Properties prop;
 
-	public ReadConfigMain() {
+	public ReadConfig() {
 	}
 
 	public Properties getPropValues(String fileName) {

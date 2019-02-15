@@ -30,3 +30,4 @@ src/main/resources/application.properties
 src/main/resources/application-test.properties
 src/test/resources/application.properties
 src/main/resources/application-test-backup.properties
+src/test/resources/application-test.properties

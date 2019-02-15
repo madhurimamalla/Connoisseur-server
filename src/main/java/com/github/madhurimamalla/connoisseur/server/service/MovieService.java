@@ -19,5 +19,7 @@ public interface MovieService {
 	List<Movie> getMoviesByGenre(String genreName);
 	
 	SimilarityRelation addSimilarityRelation(SimilarityRelation sr);
+	
+	long findMaxId();
 
 }

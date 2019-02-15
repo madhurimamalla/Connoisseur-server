@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.madhurimamalla.connoisseur.server.config.ReadConfigMain;
+import com.github.madhurimamalla.connoisseur.server.config.ReadConfig;
 import com.github.madhurimamalla.connoisseur.server.moviedb.client.MovieDBClient;
 import com.github.madhurimamalla.connoisseur.server.moviedb.client.MovieNotFoundException;
 import com.github.madhurimamalla.connoisseur.server.moviedb.client.rest.model.CreditsRM;
@@ -48,7 +48,7 @@ public class TMDBClient implements MovieDBClient {
 		/**
 		 * The API key is loaded from a properties file
 		 */
-		Properties prop = new ReadConfigMain().getPropValues(PROPS_FILE);
+		Properties prop = new ReadConfig().getPropValues(PROPS_FILE);
 		LOG.info("Successfully fetched the properties from the local.properties file");
 		API_KEY = prop.getProperty("api.token");
 	}
