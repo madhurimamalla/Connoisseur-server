@@ -18,10 +18,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.github.madhurimamalla.connoisseur.server.model.Genre;
+import com.github.madhurimamalla.connoisseur.server.model.JobHistory;
 import com.github.madhurimamalla.connoisseur.server.model.Movie;
 import com.github.madhurimamalla.connoisseur.server.model.Person;
 import com.github.madhurimamalla.connoisseur.server.model.SimilarityRelation;
 import com.github.madhurimamalla.connoisseur.server.persistence.GenreRepository;
+import com.github.madhurimamalla.connoisseur.server.persistence.JobRepository;
 import com.github.madhurimamalla.connoisseur.server.persistence.MovieRepository;
 import com.github.madhurimamalla.connoisseur.server.persistence.PersonRepository;
 import com.github.madhurimamalla.connoisseur.server.persistence.SimilarityRelationRepository;
@@ -119,11 +121,13 @@ public class ConnoisseurMovieService implements MovieService {
 		return srDAO.save(sr);
 	}
 
+	/**
+	 * Finds the highest Id found in the movie table
+	 */
 	@Override
 	public long findMaxId() {
-		EntityManager em = emf.createEntityManager();
-		Query query = em.createQuery("select max (tmdbMovieID) from Movie");
-		Object id =  query.getFirstResult();
+		Object id = this.repository.findMaxId();
 		return (long) id;
 	}
+
 }

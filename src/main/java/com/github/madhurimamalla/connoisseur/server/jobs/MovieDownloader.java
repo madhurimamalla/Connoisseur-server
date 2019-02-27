@@ -56,7 +56,10 @@ public class MovieDownloader implements Runnable {
 
 	Map<Long, Person> perMoviePersonMap = new HashMap<>();
 
-	public MovieDownloader(String name, Broker<Long> broker, MovieService movieService) {
+	JobLog logger;
+
+	public MovieDownloader(JobLog logger, String name, Broker<Long> broker, MovieService movieService) {
+		this.logger = logger;
 		this.name = name;
 		this.broker = broker;
 		this.movieService = movieService;
@@ -76,16 +79,15 @@ public class MovieDownloader implements Runnable {
 				Movie m = fetchMovie(id);
 				movieService.addMovie(m);
 			} catch (MovieNotFoundException e) {
-				LOG.info("Movie with id [" + id + "] not found.");
+				logger.write("Movie with id [" + id + "] not found.");
 			} catch (InterruptedException e) {
-				LOG.info("Movie download thread interrupted.");
+				logger.write("Movie download thread interrupted.");
 			} catch (Exception e) {
 				e.printStackTrace();
 				break;
 			}
 		}
-		System.out.println("Done.");
-
+		logger.write("Downloader thread finished.");
 	}
 
 	private Movie fetchMovie(long id) throws Exception {
@@ -99,6 +101,7 @@ public class MovieDownloader implements Runnable {
 		Movie movie = toDomainModel(rm);
 
 		LOG.info("---------------------" + rm.getTitle() + "[" + id + "]--------------------");
+		logger.write("Downloaded movie : " + rm.getTitle() + "[" + id + "]");
 		CreditsRM creditsRM = null;
 		try {
 			creditsRM = client.getMovieCredits(id);
@@ -128,9 +131,9 @@ public class MovieDownloader implements Runnable {
 
 				Objects.requireNonNull(personRM);
 				if (personRM.getName() == null) {
-					LOG.error("*******************************************");
-					LOG.error("Failed to fetch person with id: " + castRM.getTmdbPersonId());
-					LOG.error("*******************************************");
+					logger.write("*******************************************");
+					logger.write("Failed to fetch person with id: " + castRM.getTmdbPersonId());
+					logger.write("*******************************************");
 				}
 				person = toDomainModel(personRM);
 				cachePerson(person);

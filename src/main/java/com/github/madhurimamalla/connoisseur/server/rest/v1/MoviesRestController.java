@@ -13,7 +13,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.github.madhurimamalla.connoisseur.server.jobs.JobLog;
+import com.github.madhurimamalla.connoisseur.server.jobs.JobScheduler;
+import com.github.madhurimamalla.connoisseur.server.jobs.JobState;
 import com.github.madhurimamalla.connoisseur.server.jobs.MovieSyncJob;
+import com.github.madhurimamalla.connoisseur.server.model.JobHistory;
+import com.github.madhurimamalla.connoisseur.server.model.JobParams;
+import com.github.madhurimamalla.connoisseur.server.model.JobType;
 import com.github.madhurimamalla.connoisseur.server.model.Movie;
 import com.github.madhurimamalla.connoisseur.server.model.SimilarityRelation;
 import com.github.madhurimamalla.connoisseur.server.moviedb.client.rest.TMDBClient;
@@ -21,6 +27,7 @@ import com.github.madhurimamalla.connoisseur.server.moviedb.client.rest.model.Mo
 import com.github.madhurimamalla.connoisseur.server.moviedb.client.rest.model.mapper.MovieMapper;
 import com.github.madhurimamalla.connoisseur.server.persistence.MovieRepository;
 import com.github.madhurimamalla.connoisseur.server.persistence.SimilarityRelationRepository;
+import com.github.madhurimamalla.connoisseur.server.service.JobService;
 import com.github.madhurimamalla.connoisseur.server.service.MovieService;
 
 @RestController
@@ -35,20 +42,45 @@ public class MoviesRestController {
 	MovieService movieService;
 
 	@Autowired
+	JobService jobService;
+
+	@Autowired
 	SimilarityRelationRepository srr;
 
 	@Autowired
 	MovieSyncJob job;
 
-	@RequestMapping("/movies/sync")
-	public String sync() {
+	@RequestMapping(value = "/movies/sync/all", method = RequestMethod.GET)
+	public long sync() {
+		JobHistory jobHistory = null;
 		try {
 			LOG.info("The sync job has started...");
-			job.start();
+			JobHistory job = new JobHistory();
+			job.setJobType(JobType.MOVIES_DOWNLOAD);
+			job.setJobStatus(JobState.QUEUED);
+			jobHistory = JobScheduler.getInstance(jobService, movieService).schedule(job);
 		} catch (Exception e) {
-			return "Sync job failed with exception" + e.getMessage();
+			return 0l;
 		}
-		return "Sync job succeeded";
+		return jobHistory.getJobId();
+	}
+
+	@RequestMapping(value = "/movies/sync", method = RequestMethod.GET)
+	public long sync(@RequestParam(value = "start") long start, @RequestParam(value = "end") long end) {
+		JobHistory jobHistory = null;
+		try {
+			LOG.info("The sync job has started.....");
+			JobHistory job = new JobHistory();
+			job.setJobType(JobType.MOVIES_DOWNLOAD);
+			job.setJobStatus(JobState.QUEUED);
+			job.getJobParams().add(new JobParams(job, "START", Long.toString(start)));
+			job.getJobParams().add(new JobParams(job, "END", Long.toString(end)));
+			jobHistory = JobScheduler.getInstance(jobService, movieService).schedule(job);
+		} catch (Exception e) {
+			LOG.error("The sync job has failed with exception: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return jobHistory.getJobId();
 	}
 
 	@RequestMapping(value = "/movies/sync/updatedb", method = RequestMethod.GET)
@@ -63,13 +95,22 @@ public class MoviesRestController {
 				latestIdOnTMDB = (long) client.getLatestMovieId();
 			} catch (Exception e) {
 				e.printStackTrace();
-			} 
+			}
 			LOG.info("The sync job has started.....");
 			job.start(lastIdInDB, latestIdOnTMDB);
 		} catch (Exception e) {
 			return "Sync job failed with exception: " + e.getMessage();
 		}
 		return "Sync job succeeded";
+	}
+
+	@RequestMapping(value = "/movies/logs", method = RequestMethod.GET)
+	public String logs(@RequestParam(value = "jobId") long jobId) {
+		Optional<JobHistory> jobOp = jobService.findJobById(jobId);
+		if (jobOp != null) {
+			return JobLog.readLog(jobOp.get().getJobType().name(), jobId);
+		}
+		return "Job id might be wrong. Please try with a different id.";
 	}
 
 	@RequestMapping(value = "/movies", method = RequestMethod.POST)
@@ -97,7 +138,7 @@ public class MoviesRestController {
 		}
 	}
 
-	@RequestMapping(value = "/similar", method = RequestMethod.GET)
+	@RequestMapping(value = "movies/similar", method = RequestMethod.GET)
 	public List<MovieRM> getSimilarMovies(@RequestParam(value = "id") long movieId) {
 		try {
 			Optional<Movie> m = repositoryService.findById(movieId);

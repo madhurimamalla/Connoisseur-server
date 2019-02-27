@@ -3,6 +3,7 @@ package com.github.madhurimamalla.connoisseur.server.service;
 import java.util.List;
 import java.util.Optional;
 
+import com.github.madhurimamalla.connoisseur.server.model.JobHistory;
 import com.github.madhurimamalla.connoisseur.server.model.Movie;
 import com.github.madhurimamalla.connoisseur.server.model.Person;
 import com.github.madhurimamalla.connoisseur.server.model.SimilarityRelation;
@@ -21,5 +22,4 @@ public interface MovieService {
 	SimilarityRelation addSimilarityRelation(SimilarityRelation sr);
 	
 	long findMaxId();
-
 }

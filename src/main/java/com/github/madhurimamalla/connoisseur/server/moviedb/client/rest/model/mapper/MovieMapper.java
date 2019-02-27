@@ -46,7 +46,9 @@ public class MovieMapper {
 			movieRM.setGenres(genreRMList);
 		}
 		movieRM.setImdbMovieId(movie.getImdbID());
-		movieRM.setOriginalLanguage(movie.getOriginalLanguage().getName());
+		if(movie.getOriginalLanguage()!=null){
+			movieRM.setOriginalLanguage(movie.getOriginalLanguage().getName());	
+		}
 		if (!movie.getLanguages().isEmpty()) {
 			List<Language> langsList = new ArrayList<>(movie.getLanguages());
 			Iterator<Language> langItr = langsList.iterator();
