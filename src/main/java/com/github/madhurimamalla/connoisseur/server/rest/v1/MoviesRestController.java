@@ -136,7 +136,7 @@ public class MoviesRestController {
 		try {
 			Optional<Movie> m = repositoryService.findById(movieId);
 			List<SimilarityRelation> similarMovies = new ArrayList<>();
-			List<MovieRM> movies = new ArrayList<>();
+			List<MovieRM> movies = new ArrayList<>();			
 			if (m.get() != null) {
 				similarMovies = srr.findBySource(m.get());
 				Iterator<SimilarityRelation> itr = similarMovies.iterator();
@@ -148,6 +148,24 @@ public class MoviesRestController {
 			return movies;
 		} catch (Exception e) {
 			LOG.error("Similar movies search failed with exception: " + e.getMessage());
+			e.printStackTrace();
+			return null;
+		}
+		
+	}
+	
+	@RequestMapping(value = "/movies/random", method = RequestMethod.GET)
+	public List<MovieRM> getRandom(@RequestParam(value = "num") long number){
+		List<MovieRM> movies = new ArrayList<>();
+		long num = number;
+		try{
+			Iterator<Movie> itr = this.movieService.getRandom(num).iterator();
+			MovieMapper mapper = new MovieMapper();
+			while (itr.hasNext()) {
+				movies.add(mapper.toMovieRMModel(itr.next()));
+			}
+			return movies;
+		}catch(Exception e){
 			e.printStackTrace();
 			return null;
 		}

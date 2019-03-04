@@ -1,5 +1,7 @@
 package com.github.madhurimamalla.connoisseur.server;
 
+import java.util.List;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -17,6 +19,7 @@ import com.github.madhurimamalla.connoisseur.server.model.JobHistory;
 import com.github.madhurimamalla.connoisseur.server.model.JobParams;
 import com.github.madhurimamalla.connoisseur.server.model.JobStats;
 import com.github.madhurimamalla.connoisseur.server.model.JobType;
+import com.github.madhurimamalla.connoisseur.server.model.Movie;
 import com.github.madhurimamalla.connoisseur.server.persistence.MovieRepository;
 import com.github.madhurimamalla.connoisseur.server.service.JobService;
 import com.github.madhurimamalla.connoisseur.server.service.JobTypeExistsException;
@@ -30,9 +33,6 @@ public class ConnoisseurApplicationTests {
 
 	private static final Logger LOG = LoggerFactory.getLogger(ConnoisseurApplicationTests.class);
 
-//	@Autowired
-//	MovieSyncJob movieSyncJob;
-
 	@Autowired
 	MovieRepository movieRepository;
 
@@ -45,30 +45,10 @@ public class ConnoisseurApplicationTests {
 	@Autowired
 	SimilarityInferenceJob sij;
 
-//	@Test()
-//	public void testDownloadJob() throws Exception {
-//		movieSyncJob.start();
-//	}
-
 	@Test
 	public void findNextJob() throws Exception {
 		JobHistory job = jobService.findNextJob();
 		System.out.println(job.getJobId());
-	}
-
-	@Test
-	public void createJobEntry() throws Exception {
-		JobHistory job = new JobHistory();
-		job.setJobName("DownloadMovies4");
-		job.setJobType(JobType.MOVIES_DOWNLOAD);
-		job.setJobStatus(JobState.QUEUED);
-		job.getJobParams().add(new JobParams(job, "START", "100"));
-		job.getJobParams().add(new JobParams(job, "END", "1000"));
-		// job.getJobStats().add(new JobStats(job, "Movies_Downloaded", ""));
-		job = jobService.addJob(job);
-		if (job != null) {
-			System.out.println(job.getJobId());
-		}
 	}
 
 	@Test
@@ -82,36 +62,6 @@ public class ConnoisseurApplicationTests {
 		if (jobService.deleteAll()) {
 			System.out.println("All jobs are deleted!");
 		}
-	}
-
-	@Test
-	public void createAndUpdateJob() throws Exception {
-		JobHistory job = new JobHistory();
-		job.setJobName("MovieDownload_7");
-		job.setJobType(JobType.MOVIES_DOWNLOAD);
-		job.setJobStatus(JobState.QUEUED);
-		JobStats stats = new JobStats(job, "Movie downloaded", "4");
-		try {
-			job = jobService.addJob(job);
-		} catch (JobTypeExistsException e) {
-			e.printStackTrace();
-		}
-		System.out.println(job.getJobId());
-	}
-
-	@Test
-	public void createAndRemoveJob() throws Exception {
-		JobHistory job = new JobHistory();
-		job.setJobName("Publish_Firebase_1");
-		job.setJobStatus(JobState.QUEUED);
-		job.setJobType(JobType.FIREBASE_PUBLISH);
-		try {
-			job = jobService.addJob(job);
-		} catch (JobTypeExistsException e) {
-			e.printStackTrace();
-		}
-		jobService.removeJob(job);
-		System.out.println(jobService.findJobById(job.getJobId()));
 	}
 
 	@Test

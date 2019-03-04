@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
 import com.github.madhurimamalla.connoisseur.server.model.Genre;
 import com.github.madhurimamalla.connoisseur.server.model.Movie;
@@ -16,5 +17,5 @@ public interface MovieRepository extends CrudRepository<Movie, Long> {
 	
 	@Query("select max(tmdbMovieID) from Movie")
 	Object findMaxId();
-
+	
 }

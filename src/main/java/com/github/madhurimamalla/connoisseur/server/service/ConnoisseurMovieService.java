@@ -1,12 +1,17 @@
 package com.github.madhurimamalla.connoisseur.server.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
+import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.transaction.Transactional;
 
@@ -116,7 +121,6 @@ public class ConnoisseurMovieService implements MovieService {
 	 * Adds a similar relation to the table SIMILAR_RELATION
 	 */
 	@Override
-	@Transactional
 	public SimilarityRelation addSimilarityRelation(SimilarityRelation sr) {
 		return srDAO.save(sr);
 	}
@@ -130,4 +134,26 @@ public class ConnoisseurMovieService implements MovieService {
 		return (long) id;
 	}
 
+	@Override
+	public List<Movie> getRandom(long numberOfMovies) {
+		Set<Movie> list = new HashSet<Movie>();
+		while (list.size() < numberOfMovies) {
+			long possibleId = (long) getRandomNumberInRange(1, Math.toIntExact((long) repository.findMaxId()));
+			Optional<Movie> movieOp = this.repository.findById(possibleId);
+			if (movieOp.isPresent()) {
+				list.add(movieOp.get());
+			}
+		}
+		return new ArrayList<Movie>(list);
+	}
+
+	private static int getRandomNumberInRange(int min, int max) {
+
+		if (min >= max) {
+			throw new IllegalArgumentException("max must be greater than min");
+		}
+
+		Random r = new Random();
+		return r.nextInt((max - min) + 1) + min;
+	}
 }
