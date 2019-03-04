@@ -21,9 +21,6 @@ public class JobLog {
 		File directory = new File(LOG_DIR);
 		if (!directory.exists()) {
 			directory.mkdirs();
-			// If you require it to make the entire directory path including
-			// parents,
-			// use directory.mkdirs(); here instead.
 		}
 		filePath = getJobLogFilePath(jobName, jobId);
 		logger = Logger.getLogger(jobName + "_" + jobId);
@@ -80,10 +77,8 @@ public class JobLog {
 				}
 			}
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return buffer.toString();
