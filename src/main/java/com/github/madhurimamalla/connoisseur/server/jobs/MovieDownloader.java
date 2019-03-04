@@ -1,6 +1,5 @@
 package com.github.madhurimamalla.connoisseur.server.jobs;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -8,6 +7,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +42,7 @@ import com.github.madhurimamalla.connoisseur.server.util.Message;
  * @author reema
  *
  */
-public class MovieDownloader implements Runnable {
+public class MovieDownloader implements Callable<Boolean> {
 
 	private static final Logger LOG = LoggerFactory.getLogger(MovieDownloader.class);
 
@@ -66,7 +66,7 @@ public class MovieDownloader implements Runnable {
 	}
 
 	@Override
-	public void run() {
+	public Boolean call() throws Exception {
 		Long id = null;
 		Thread.currentThread().setName(name);
 		while (true) {
@@ -84,10 +84,12 @@ public class MovieDownloader implements Runnable {
 				logger.write("Movie download thread interrupted.");
 			} catch (Exception e) {
 				e.printStackTrace();
-				break;
+				logger.write("Failed to download movie: [" + id + "]. Error: " + e.getMessage());
+				throw e;
 			}
 		}
 		logger.write("Downloader thread finished.");
+		return true;
 	}
 
 	private Movie fetchMovie(long id) throws Exception {
@@ -190,7 +192,7 @@ public class MovieDownloader implements Runnable {
 
 		Objects.requireNonNull(keywordsRM);
 		Objects.requireNonNull(keywordsRM.getKeywords());
-		List<Keyword> keywords = new ArrayList<>();
+		Set<Keyword> keywords = new HashSet<>();
 		for (KeywordRM keywordRM : keywordsRM.getKeywords()) {
 			keywords.add(toDomainModel(keywordRM));
 		}

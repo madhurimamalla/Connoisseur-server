@@ -35,4 +35,8 @@ public interface JobService {
 
 	List<JobParams> getJobParams(long jobId);
 
+	void removeAllQueueJobs();
+
+	void cleanUpJobs();
+
 }

@@ -1,7 +1,9 @@
 package com.github.madhurimamalla.connoisseur.server.jobs;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -31,7 +33,8 @@ public final class SyncJob extends AbstractJob {
 	}
 
 	@Override
-	protected void execute(List<JobParams> params) throws Exception {
+	protected JobResult execute(List<JobParams> params) throws Exception {
+		JobResult result = JobResult.SUCCESS;
 		getLogger().write("Execute on SyncJob is called...");
 		Iterator<JobParams> itr = params.iterator();
 		while (itr.hasNext()) {
@@ -51,7 +54,8 @@ public final class SyncJob extends AbstractJob {
 		if (startIndex < endIndex) {
 			ExecutorService threadPool = Executors.newFixedThreadPool(6);
 
-			threadPool.execute(new MovieDownloader(getLogger(), "C1", broker, movieService));
+			List<Future<Boolean>> downloaderFutures = new ArrayList<>();
+			downloaderFutures.add(threadPool.submit(new MovieDownloader(getLogger(), "C1", broker, movieService)));
 
 			/*
 			 * TODO This will need a better solution as we are hitting a 429
@@ -90,22 +94,50 @@ public final class SyncJob extends AbstractJob {
 
 			});
 
-			producerStatus.get();
+			/*
+			 * Monitoring loop.
+			 */
+			while (true) {
+				if (isCancelled.get()) {
+					producerStatus.cancel(true);
+					result = JobResult.CANCELLED;
+					break;
+				}
+				if (producerStatus.isDone()) {
+					break;
+				}
 
-			getLogger().write("Producer completed.");
+				for (Future<Boolean> f : downloaderFutures) {
+					if (f.isDone()) {
+						try {
+							f.get();
+						} catch (ExecutionException e) {
+							threadPool.shutdownNow();
+							throw e;
+						}
+					}
+				}
+				Thread.sleep(5000);
+			}
 
-			getLogger().write("Shutting down downloader threads.");
-			broker.shutdown(5);
+			/*
+			 * Producer completed or cancelled. Signal the downloaders and shut
+			 * down the thread pool gracefully.
+			 */
+			getLogger().write("Sending shutdown signal to downloader threads.");
+			broker.shutdown(downloaderFutures.size());
 
 			threadPool.shutdown();
 			try {
 				if (!threadPool.awaitTermination(600, TimeUnit.SECONDS)) {
+					getLogger().write("Downloaders did not finish. Forcing thread pool shutdown.");
 					threadPool.shutdownNow();
 				}
 			} catch (InterruptedException ex) {
 				threadPool.shutdownNow();
 			}
 		}
+		return result;
 	}
 
 }

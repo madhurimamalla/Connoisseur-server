@@ -163,5 +163,26 @@ public class ConnoisseurJobService implements JobService {
 	public long countOfQueuedJobs() {
 		return this.jobDAO.findNumberOfQueuedJobs();
 	}
+	
+	@Override
+	public void removeAllQueueJobs(){
+		Iterator<JobQueue> itr = this.jobQDAO.findAll().iterator();
+		while(itr.hasNext()){
+			this.jobQDAO.delete(itr.next());
+		}
+	}
+
+	@Override
+	@Transactional
+	public void cleanUpJobs() {
+		Iterator<JobHistory> jobsItr = this.jobDAO.findByjobStatus(JobState.RUNNING).iterator();
+		while(jobsItr.hasNext()){
+			JobHistory jobHistory = jobsItr.next();
+			JobQueue jq = this.jobQDAO.findByJobType(jobHistory.getJobType());
+			this.jobQDAO.delete(jq);
+			jobHistory.setJobStatus(JobState.FAILED);
+			this.jobDAO.save(jobHistory);
+		}
+	}
 
 }

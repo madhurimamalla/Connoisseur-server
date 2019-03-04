@@ -1,6 +1,7 @@
 package com.github.madhurimamalla.connoisseur.server.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -217,8 +218,8 @@ public class Movie {
 		return keywords;
 	}
 
-	public void setKeywords(List<Keyword> keywords) {
-		this.keywords = keywords;
+	public void setKeywords(Collection<Keyword> keywords) {
+		this.keywords.addAll(keywords);
 	}
 
 	@Override

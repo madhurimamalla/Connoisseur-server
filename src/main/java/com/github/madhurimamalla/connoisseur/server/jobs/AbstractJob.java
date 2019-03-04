@@ -33,8 +33,9 @@ public abstract class AbstractJob implements RunnableJob {
 	public void run() {
 		jobService.updateJobStatus(job.getJobId(), JobState.RUNNING);
 		getLogger().write("Updating the job status to RUNNING");
+		JobResult result = JobResult.SUCCESS;
 		try {
-			execute(job.getJobParams());
+			result = execute(job.getJobParams());
 		} catch (Exception e) {
 			Writer writer = new StringWriter();
 			e.printStackTrace(new PrintWriter(writer));
@@ -45,24 +46,28 @@ public abstract class AbstractJob implements RunnableJob {
 			jobService.deleteTypeFromQ(job);
 			return;
 		}
-		jobService.updateJobStatus(job.getJobId(), JobState.FINISHED);
-		getLogger().write("Updating the job status to FINISHED");
+		if(result == JobResult.SUCCESS) {
+			jobService.updateJobStatus(job.getJobId(), JobState.FINISHED);
+			getLogger().write("Updating the job status to FINISHED");
+		} else {
+			jobService.updateJobStatus(job.getJobId(), JobState.CANCELLED);
+			getLogger().write("Updating the job status to CANCELLED");
+		}
 		jobService.deleteTypeFromQ(job);
 	}
 
-	protected abstract void execute(List<JobParams> params) throws Exception;
+	protected abstract JobResult execute(List<JobParams> params) throws Exception;
 
 	@Override
 	public void cancel() {
 		isCancelled.set(true);
-		LOG.info("The job is cancelled");
+		LOG.info("Cancellation request received for job [" + job.getJobId() + "].");
 		getLogger().write("The job is cancelled!");
 	}
 
 	@Override
 	public void updateJobType(JobType JOB_TYPE) {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override

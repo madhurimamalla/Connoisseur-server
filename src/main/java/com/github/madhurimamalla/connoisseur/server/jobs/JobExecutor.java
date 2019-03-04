@@ -9,6 +9,7 @@ public final class JobExecutor implements Runnable {
 
 	private JobService jobService;
 	private MovieService movieService;
+	private RunnableJob currentlyRunningJob;
 
 	public JobExecutor(JobService jobService, MovieService movieService) {
 		this.jobService = jobService;
@@ -42,18 +43,27 @@ public final class JobExecutor implements Runnable {
 			if(jobService.countOfQueuedJobs() > 0) {
 				JobHistory job = jobService.findNextJob();
 				if (job != null) {
-					RunnableJob runnableJob = getJobInstance(job);
-					if (runnableJob != null) {
-						runnableJob.run();
+					currentlyRunningJob = getJobInstance(job);
+					if (currentlyRunningJob != null) {
+						currentlyRunningJob.run();
+						currentlyRunningJob = null;
 					}
 				}
 			}
 			try {
 				Thread.sleep(20000);
 			} catch (InterruptedException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
+		}
+	}
+	
+	public void cancelJob(JobHistory job) {
+		/*
+		 * There can be only one running job at a time.
+		 */
+		if(currentlyRunningJob != null) {
+			currentlyRunningJob.cancel();
 		}
 	}
 

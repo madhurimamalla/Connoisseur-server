@@ -41,7 +41,6 @@ public class Keyword {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + (int) (tmdb_keyword_id ^ (tmdb_keyword_id >>> 32));
 		return result;
 	}
@@ -55,11 +54,6 @@ public class Keyword {
 		if (getClass() != obj.getClass())
 			return false;
 		Keyword other = (Keyword) obj;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
-			return false;
 		if (tmdb_keyword_id != other.tmdb_keyword_id)
 			return false;
 		return true;

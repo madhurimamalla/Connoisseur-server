@@ -1,4 +1,4 @@
-package com.github.madhurimamalla.connoisseur.server.jobs;
+/*package com.github.madhurimamalla.connoisseur.server.jobs;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -29,9 +29,9 @@ public class MovieSyncJob {
 
 	private AtomicInteger jobCounter = new AtomicInteger(1);
 
-	/*
+	
 	 * Runs the job with startIndex = 1; endIndex = latestMovieId on TMDB
-	 */
+	 
 	public long start() throws InterruptedException {
 		TMDBClient client = new TMDBClient();
 		long endId = 1;
@@ -44,9 +44,9 @@ public class MovieSyncJob {
 		return runWithIndexes(1, endId);
 	}
 
-	/*
+	
 	 * Runs the job with startIndex = startId ; endIndex = endId
-	 */
+	 
 	public long start(long startId, long endId) throws InterruptedException {
 		LOG.info("Starting the job with starting id: " + startId + " and fetching till endId: " + endId);
 		return runWithIndexes(startId, endId);
@@ -77,10 +77,10 @@ public class MovieSyncJob {
 						// threadPool.execute(new MovieDownloader(jobLog, "C5",
 						// broker, movieService));
 
-						/**
+						*//**
 						 * Initiate a producer thread to populate the shared
 						 * queue with movie ids.
-						 */
+						 *//*
 						Future<?> producerStatus = threadPool.submit(new Runnable() {
 
 							@Override
@@ -131,3 +131,4 @@ public class MovieSyncJob {
 	}
 
 }
+*/

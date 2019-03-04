@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.github.madhurimamalla.connoisseur.server.jobs.JobLog;
 import com.github.madhurimamalla.connoisseur.server.jobs.JobScheduler;
 import com.github.madhurimamalla.connoisseur.server.jobs.JobState;
-import com.github.madhurimamalla.connoisseur.server.jobs.MovieSyncJob;
 import com.github.madhurimamalla.connoisseur.server.model.JobHistory;
 import com.github.madhurimamalla.connoisseur.server.model.JobParams;
 import com.github.madhurimamalla.connoisseur.server.model.JobType;
@@ -46,9 +45,6 @@ public class MoviesRestController {
 
 	@Autowired
 	SimilarityRelationRepository srr;
-
-	@Autowired
-	MovieSyncJob job;
 
 	@RequestMapping(value = "/movies/sync/all", method = RequestMethod.GET)
 	public long sync() {
@@ -84,24 +80,21 @@ public class MoviesRestController {
 	}
 
 	@RequestMapping(value = "/movies/sync/updatedb", method = RequestMethod.GET)
-	public String updateDBToLatestTMDBId() {
-
+	public long updateDBToLatestTMDBId(@RequestParam(value = "end") long end) {
+		JobHistory jobHistory = null;
 		try {
-			// TODO Fix that finding of max of the ids
-			long lastIdInDB = movieService.findMaxId();
-			TMDBClient client = new TMDBClient();
-			long latestIdOnTMDB = 1;
-			try {
-				latestIdOnTMDB = (long) client.getLatestMovieId();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
 			LOG.info("The sync job has started.....");
-			job.start(lastIdInDB, latestIdOnTMDB);
+			JobHistory job = new JobHistory();
+			job.setJobType(JobType.MOVIES_DOWNLOAD);
+			job.setJobStatus(JobState.QUEUED);
+			job.getJobParams().add(new JobParams(job, "START", Long.toString(movieService.findMaxId())));
+			job.getJobParams().add(new JobParams(job, "END", Long.toString(end)));
+			jobHistory = JobScheduler.getInstance(jobService, movieService).schedule(job);
 		} catch (Exception e) {
-			return "Sync job failed with exception: " + e.getMessage();
+			LOG.error("The sync job has failed with exception: " + e.getMessage());
+			e.printStackTrace();
 		}
-		return "Sync job succeeded";
+		return jobHistory.getJobId();
 	}
 
 	@RequestMapping(value = "/movies/logs", method = RequestMethod.GET)
@@ -138,7 +131,7 @@ public class MoviesRestController {
 		}
 	}
 
-	@RequestMapping(value = "movies/similar", method = RequestMethod.GET)
+	@RequestMapping(value = "/movies/similar", method = RequestMethod.GET)
 	public List<MovieRM> getSimilarMovies(@RequestParam(value = "id") long movieId) {
 		try {
 			Optional<Movie> m = repositoryService.findById(movieId);
@@ -158,5 +151,40 @@ public class MoviesRestController {
 			e.printStackTrace();
 			return null;
 		}
+	}
+
+	@RequestMapping(value = "/jobs/cancel")
+	public String cancelJob(@RequestParam(value = "jobId") long jobId) {
+		try {
+			JobScheduler.getInstance(jobService, movieService).cancel(jobService.findJobById(jobId).get());
+			return "Initiated cancel of the jobId";
+		} catch (Exception e) {
+			return "Cancel request on " + jobId + " failed";
+		}
+	}
+
+	@RequestMapping(value = "/jobs/queue/clean")
+	public String removeJobsFromJobQueue() {
+		try {
+			JobScheduler.getInstance(jobService, movieService).removeJobsFromQueue();
+			return "Removed jobs from queue";
+		} catch (Exception e) {
+			return e.getMessage();
+		}
+	}
+
+	@RequestMapping(value = "/jobs/similarityInference", method = RequestMethod.GET)
+	public long computeSimilarityInference() {
+		JobHistory jobHistory = null;
+		try {
+			LOG.info("The sync job has started...");
+			JobHistory job = new JobHistory();
+			job.setJobType(JobType.SIMILARITY_INFERENCE);
+			job.setJobStatus(JobState.QUEUED);
+			jobHistory = JobScheduler.getInstance(jobService, movieService).schedule(job);
+		} catch (Exception e) {
+			return 0l;
+		}
+		return jobHistory.getJobId();
 	}
 }

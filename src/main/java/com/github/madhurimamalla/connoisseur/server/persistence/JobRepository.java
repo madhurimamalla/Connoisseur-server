@@ -6,7 +6,9 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
+import com.github.madhurimamalla.connoisseur.server.jobs.JobState;
 import com.github.madhurimamalla.connoisseur.server.model.JobHistory;
+import com.github.madhurimamalla.connoisseur.server.model.JobType;
 
 public interface JobRepository extends CrudRepository<JobHistory, Long> {
 	
@@ -18,9 +20,9 @@ public interface JobRepository extends CrudRepository<JobHistory, Long> {
 	
 	void deleteAll();
 	
-	List<JobHistory> findByjobStatus(String jobStatus);
+	List<JobHistory> findByjobStatus(JobState jobStatus);
 	
-	List<JobHistory> findByjobType(Enum jobType);
+	List<JobHistory> findByjobType(JobType jobType);
 	
 	long count();
 	

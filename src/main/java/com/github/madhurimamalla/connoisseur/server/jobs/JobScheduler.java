@@ -20,10 +20,11 @@ public class JobScheduler {
 
 	private static JobScheduler instance = null;
 
-	Thread t1;
+	private Thread t1;
 
 	public static JobScheduler getInstance(JobService jobService, MovieService movieService) {
 		if (instance == null) {
+			jobService.cleanUpJobs();
 			instance = new JobScheduler(jobService, movieService);
 		}
 		return instance;
@@ -54,6 +55,17 @@ public class JobScheduler {
 		}
 	}
 
+	/**
+	 * Removes all entries from the JOB_QUEUE
+	 */
+	public void removeJobsFromQueue() {
+		try {
+			jobService.removeAllQueueJobs();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 	public void cancelAllJobs() {
 		/**
 		 * Query the JobHistory table and cancel all the jobs in it
@@ -65,13 +77,6 @@ public class JobScheduler {
 		/**
 		 * Cancel a specific job
 		 */
+		
 	}
-
-	public JobLog getJobLog(JobHistory job) {
-		/**
-		 * Return job log of a specific job
-		 */
-		return null;
-	}
-
 }

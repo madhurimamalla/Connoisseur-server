@@ -2,9 +2,12 @@ package com.github.madhurimamalla.connoisseur.server.jobs;
 
 import com.github.madhurimamalla.connoisseur.server.model.JobHistory;
 import com.github.madhurimamalla.connoisseur.server.model.JobType;
-import com.github.madhurimamalla.connoisseur.server.service.JobService;
 
 public interface RunnableJob extends Runnable {
+	
+	public static enum JobResult {
+		SUCCESS, FAILURE, CANCELLED
+	}
 	
 	public void cancel();
 	

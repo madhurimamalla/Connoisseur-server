@@ -11,7 +11,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.github.madhurimamalla.connoisseur.server.jobs.JobState;
-import com.github.madhurimamalla.connoisseur.server.jobs.MovieSyncJob;
+//import com.github.madhurimamalla.connoisseur.server.jobs.MovieSyncJob;
 import com.github.madhurimamalla.connoisseur.server.jobs.SimilarityInferenceJob;
 import com.github.madhurimamalla.connoisseur.server.model.JobHistory;
 import com.github.madhurimamalla.connoisseur.server.model.JobParams;
@@ -30,8 +30,8 @@ public class ConnoisseurApplicationTests {
 
 	private static final Logger LOG = LoggerFactory.getLogger(ConnoisseurApplicationTests.class);
 
-	@Autowired
-	MovieSyncJob movieSyncJob;
+//	@Autowired
+//	MovieSyncJob movieSyncJob;
 
 	@Autowired
 	MovieRepository movieRepository;
@@ -45,10 +45,10 @@ public class ConnoisseurApplicationTests {
 	@Autowired
 	SimilarityInferenceJob sij;
 
-	@Test()
-	public void testDownloadJob() throws Exception {
-		movieSyncJob.start();
-	}
+//	@Test()
+//	public void testDownloadJob() throws Exception {
+//		movieSyncJob.start();
+//	}
 
 	@Test
 	public void findNextJob() throws Exception {
