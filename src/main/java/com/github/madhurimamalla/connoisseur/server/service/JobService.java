@@ -6,6 +6,8 @@ import java.util.Optional;
 import com.github.madhurimamalla.connoisseur.server.jobs.JobState;
 import com.github.madhurimamalla.connoisseur.server.model.JobHistory;
 import com.github.madhurimamalla.connoisseur.server.model.JobParams;
+import com.github.madhurimamalla.connoisseur.server.model.JobQueue;
+import com.github.madhurimamalla.connoisseur.server.model.JobType;
 
 public interface JobService {
 
@@ -38,5 +40,7 @@ public interface JobService {
 	void removeAllQueueJobs();
 
 	void cleanUpJobs();
+
+	boolean existsByJobType(JobType jobType);
 
 }

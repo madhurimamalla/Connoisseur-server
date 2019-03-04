@@ -19,6 +19,7 @@ import com.github.madhurimamalla.connoisseur.server.jobs.RunnableJob;
 import com.github.madhurimamalla.connoisseur.server.model.JobHistory;
 import com.github.madhurimamalla.connoisseur.server.model.JobParams;
 import com.github.madhurimamalla.connoisseur.server.model.JobQueue;
+import com.github.madhurimamalla.connoisseur.server.model.JobType;
 import com.github.madhurimamalla.connoisseur.server.persistence.JobQueueRepository;
 import com.github.madhurimamalla.connoisseur.server.persistence.JobRepository;
 
@@ -141,9 +142,9 @@ public class ConnoisseurJobService implements JobService {
 		}
 		return job;
 	}
-	
+
 	@Override
-	public List<JobParams> getJobParams(long jobId){
+	public List<JobParams> getJobParams(long jobId) {
 		JobHistory job = null;
 		Optional<JobHistory> jobHistoryOp = this.jobDAO.findById(jobId);
 		if (jobHistoryOp != null) {
@@ -163,12 +164,22 @@ public class ConnoisseurJobService implements JobService {
 	public long countOfQueuedJobs() {
 		return this.jobDAO.findNumberOfQueuedJobs();
 	}
-	
+
 	@Override
-	public void removeAllQueueJobs(){
+	public void removeAllQueueJobs() {
 		Iterator<JobQueue> itr = this.jobQDAO.findAll().iterator();
-		while(itr.hasNext()){
+		while (itr.hasNext()) {
 			this.jobQDAO.delete(itr.next());
+		}
+	}
+
+	@Override
+	public boolean existsByJobType(JobType jobType) {
+		try {
+			this.jobQDAO.findByJobType(jobType);
+			return true;
+		} catch (Exception e) {
+			return false;
 		}
 	}
 
@@ -176,7 +187,7 @@ public class ConnoisseurJobService implements JobService {
 	@Transactional
 	public void cleanUpJobs() {
 		Iterator<JobHistory> jobsItr = this.jobDAO.findByjobStatus(JobState.RUNNING).iterator();
-		while(jobsItr.hasNext()){
+		while (jobsItr.hasNext()) {
 			JobHistory jobHistory = jobsItr.next();
 			JobQueue jq = this.jobQDAO.findByJobType(jobHistory.getJobType());
 			this.jobQDAO.delete(jq);

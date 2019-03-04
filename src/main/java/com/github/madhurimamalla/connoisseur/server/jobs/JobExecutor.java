@@ -58,7 +58,7 @@ public final class JobExecutor implements Runnable {
 		}
 	}
 	
-	public void cancelJob(JobHistory job) {
+	public void cancelJob() {
 		/*
 		 * There can be only one running job at a time.
 		 */

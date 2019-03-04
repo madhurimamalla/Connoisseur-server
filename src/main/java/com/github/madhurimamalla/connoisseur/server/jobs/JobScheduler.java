@@ -73,10 +73,23 @@ public class JobScheduler {
 
 	}
 
+	/**
+	 * This will attempt to cancel a job
+	 * @param job
+	 */
 	public void cancel(JobHistory job) {
-		/**
-		 * Cancel a specific job
-		 */
-		
+		if (job.getJobStatus().equals(JobState.RUNNING) && (jobService.existsByJobType(job.getJobType()) == true)) {
+			/**
+			 * Cancel a specific job
+			 */
+			if (jobExecutor != null) {
+				jobExecutor.cancelJob();
+			}
+		} else {
+			/**
+			 * Update the status to be cancelled
+			 */
+			jobService.updateJobStatus(job.getJobId(), JobState.CANCELLED);
+		}
 	}
 }
