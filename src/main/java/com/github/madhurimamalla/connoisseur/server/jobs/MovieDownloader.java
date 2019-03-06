@@ -1,5 +1,6 @@
 package com.github.madhurimamalla.connoisseur.server.jobs;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.madhurimamalla.connoisseur.server.images.ImageDownloader;
 import com.github.madhurimamalla.connoisseur.server.model.CrewType;
 import com.github.madhurimamalla.connoisseur.server.model.Genre;
 import com.github.madhurimamalla.connoisseur.server.model.Keyword;
@@ -56,13 +58,17 @@ public class MovieDownloader implements Callable<Boolean> {
 
 	Map<Long, Person> perMoviePersonMap = new HashMap<>();
 
+	ImageDownloader imageDownloader;
+
 	JobLog logger;
 
-	public MovieDownloader(JobLog logger, String name, Broker<Long> broker, MovieService movieService) {
+	public MovieDownloader(JobLog logger, String name, Broker<Long> broker, MovieService movieService,
+			ImageDownloader imageDownloader) {
 		this.logger = logger;
 		this.name = name;
 		this.broker = broker;
 		this.movieService = movieService;
+		this.imageDownloader = imageDownloader;
 	}
 
 	@Override
@@ -76,10 +82,25 @@ public class MovieDownloader implements Callable<Boolean> {
 					break;
 				}
 				id = message.getPayload();
+				/**
+				 * Fetch movie from source
+				 */
 				Movie m = fetchMovie(id);
+				/**
+				 * Persist movie to DB
+				 */
 				movieService.addMovie(m);
+				/**
+				 * Adding poster to the folder
+				 */
+				String imageURL = "http://image.tmdb.org/t/p/original/" + m.getTmdbPosterPath();
+				imageDownloader.downloadImage(imageURL, m.getTmdbMovieID());
 			} catch (MovieNotFoundException e) {
 				logger.write("Movie with id [" + id + "] not found.");
+			} catch (IOException e) {
+				logger.write("There's some issue fetching poster for id: " + id);
+				e.printStackTrace();
+				continue;
 			} catch (InterruptedException e) {
 				logger.write("Movie download thread interrupted.");
 			} catch (Exception e) {

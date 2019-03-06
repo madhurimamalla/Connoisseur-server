@@ -1,7 +1,5 @@
 package com.github.madhurimamalla.connoisseur.server;
 
-import java.util.List;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -12,17 +10,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.github.madhurimamalla.connoisseur.server.jobs.JobState;
-//import com.github.madhurimamalla.connoisseur.server.jobs.MovieSyncJob;
 import com.github.madhurimamalla.connoisseur.server.jobs.SimilarityInferenceJob;
 import com.github.madhurimamalla.connoisseur.server.model.JobHistory;
-import com.github.madhurimamalla.connoisseur.server.model.JobParams;
-import com.github.madhurimamalla.connoisseur.server.model.JobStats;
-import com.github.madhurimamalla.connoisseur.server.model.JobType;
-import com.github.madhurimamalla.connoisseur.server.model.Movie;
 import com.github.madhurimamalla.connoisseur.server.persistence.MovieRepository;
 import com.github.madhurimamalla.connoisseur.server.service.JobService;
-import com.github.madhurimamalla.connoisseur.server.service.JobTypeExistsException;
 import com.github.madhurimamalla.connoisseur.server.service.MovieService;
 
 @RunWith(SpringRunner.class)

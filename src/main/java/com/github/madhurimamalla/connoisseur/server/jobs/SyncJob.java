@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.madhurimamalla.connoisseur.server.images.ImageDownloader;
 import com.github.madhurimamalla.connoisseur.server.model.JobHistory;
 import com.github.madhurimamalla.connoisseur.server.model.JobParams;
 import com.github.madhurimamalla.connoisseur.server.service.JobService;
@@ -50,12 +51,14 @@ public final class SyncJob extends AbstractJob {
 		LOG.info("Start index: " + startIndex + " End Index: " + endIndex);
 
 		Broker<Long> broker = new Broker<>();
+		ImageDownloader imageDownloader = new ImageDownloader(movieService);
 
 		if (startIndex < endIndex) {
 			ExecutorService threadPool = Executors.newFixedThreadPool(6);
 
 			List<Future<Boolean>> downloaderFutures = new ArrayList<>();
-			downloaderFutures.add(threadPool.submit(new MovieDownloader(getLogger(), "C1", broker, movieService)));
+			downloaderFutures.add(
+					threadPool.submit(new MovieDownloader(getLogger(), "C1", broker, movieService, imageDownloader)));
 
 			/*
 			 * TODO This will need a better solution as we are hitting a 429
