@@ -60,6 +60,7 @@ public abstract class AbstractJob implements RunnableJob {
 
 	@Override
 	public void cancel() {
+		LOG.info("AbstractJob is setting the cancel flag to true");
 		isCancelled.set(true);
 		LOG.info("Cancellation request received for job [" + job.getJobId() + "].");
 		getLogger().write("The job is cancelled!");

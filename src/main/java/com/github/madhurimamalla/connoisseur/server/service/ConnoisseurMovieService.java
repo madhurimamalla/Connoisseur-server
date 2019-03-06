@@ -144,6 +144,7 @@ public class ConnoisseurMovieService implements MovieService {
 				list.add(movieOp.get());
 			}
 		}
+
 		return new ArrayList<Movie>(list);
 	}
 
@@ -156,4 +157,17 @@ public class ConnoisseurMovieService implements MovieService {
 		Random r = new Random();
 		return r.nextInt((max - min) + 1) + min;
 	}
+
+	@Override
+	public Movie findMovieById(long id) {
+		Movie movie = null;
+
+		Optional<Movie> movieOp = this.repository.findById(id);
+		if (movieOp.isPresent()) {
+			movie = movieOp.get();
+		}
+
+		return movie;
+	}
+
 }

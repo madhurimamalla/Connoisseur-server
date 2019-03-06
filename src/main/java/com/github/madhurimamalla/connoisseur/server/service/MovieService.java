@@ -22,4 +22,6 @@ public interface MovieService {
 	long findMaxId();
 
 	List<Movie> getRandom(long number);
+
+	Movie findMovieById(long id);
 }

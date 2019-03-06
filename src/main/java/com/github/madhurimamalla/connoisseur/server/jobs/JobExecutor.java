@@ -1,5 +1,8 @@
 package com.github.madhurimamalla.connoisseur.server.jobs;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.github.madhurimamalla.connoisseur.server.model.JobHistory;
 
 import com.github.madhurimamalla.connoisseur.server.service.JobService;
@@ -7,10 +10,11 @@ import com.github.madhurimamalla.connoisseur.server.service.MovieService;
 
 public final class JobExecutor implements Runnable {
 
+	private static final Logger LOG = LoggerFactory.getLogger(JobExecutor.class);
+
 	private JobService jobService;
 	private MovieService movieService;
-	private RunnableJob currentlyRunningJob;
-	private RunnableJob copyOfRunningJob;
+	private volatile RunnableJob currentlyRunningJob;
 
 	public JobExecutor(JobService jobService, MovieService movieService) {
 		this.jobService = jobService;
@@ -59,14 +63,25 @@ public final class JobExecutor implements Runnable {
 		}
 	}
 
+	/*
+	 * synchronized private void updateRunningJob(RunnableJob job) {
+	 * this.currentlyRunningJob = job; }
+	 * 
+	 * synchronized private void cancelRunningJob() {
+	 * if(this.currentlyRunningJob != null) { this.currentlyRunningJob.cancel();
+	 * } }
+	 */
+
 	public void cancelJob() {
 		/**
-		 * Just in case the job finishes before cancel is
-		 * requested
+		 * Just in case the job finishes before cancel is requested
 		 */
-		copyOfRunningJob = currentlyRunningJob;
+		RunnableJob copyOfRunningJob = currentlyRunningJob;
 		if (copyOfRunningJob != null) {
+			LOG.info("JobExecutor will try to propogate the cancel request now to AbstractJob");
 			copyOfRunningJob.cancel();
+		} else {
+			LOG.info("copyOfRunningJob is null");
 		}
 	}
 

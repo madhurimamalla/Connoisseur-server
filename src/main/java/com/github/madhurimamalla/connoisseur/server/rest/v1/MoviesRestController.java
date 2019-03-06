@@ -21,7 +21,6 @@ import com.github.madhurimamalla.connoisseur.server.model.JobParams;
 import com.github.madhurimamalla.connoisseur.server.model.JobType;
 import com.github.madhurimamalla.connoisseur.server.model.Movie;
 import com.github.madhurimamalla.connoisseur.server.model.SimilarityRelation;
-import com.github.madhurimamalla.connoisseur.server.moviedb.client.rest.TMDBClient;
 import com.github.madhurimamalla.connoisseur.server.moviedb.client.rest.model.MovieRM;
 import com.github.madhurimamalla.connoisseur.server.moviedb.client.rest.model.mapper.MovieMapper;
 import com.github.madhurimamalla.connoisseur.server.persistence.MovieRepository;
@@ -136,7 +135,7 @@ public class MoviesRestController {
 		try {
 			Optional<Movie> m = repositoryService.findById(movieId);
 			List<SimilarityRelation> similarMovies = new ArrayList<>();
-			List<MovieRM> movies = new ArrayList<>();			
+			List<MovieRM> movies = new ArrayList<>();
 			if (m.get() != null) {
 				similarMovies = srr.findBySource(m.get());
 				Iterator<SimilarityRelation> itr = similarMovies.iterator();
@@ -151,21 +150,21 @@ public class MoviesRestController {
 			e.printStackTrace();
 			return null;
 		}
-		
+
 	}
-	
+
 	@RequestMapping(value = "/movies/random", method = RequestMethod.GET)
-	public List<MovieRM> getRandom(@RequestParam(value = "num") long number){
+	public List<MovieRM> getRandom(@RequestParam(value = "num") long number) {
 		List<MovieRM> movies = new ArrayList<>();
 		long num = number;
-		try{
+		try {
 			Iterator<Movie> itr = this.movieService.getRandom(num).iterator();
 			MovieMapper mapper = new MovieMapper();
 			while (itr.hasNext()) {
 				movies.add(mapper.toMovieRMModel(itr.next()));
 			}
 			return movies;
-		}catch(Exception e){
+		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
 		}
@@ -175,7 +174,7 @@ public class MoviesRestController {
 	public String cancelJob(@RequestParam(value = "jobId") long jobId) {
 		try {
 			JobScheduler.getInstance(jobService, movieService).cancel(jobService.findJobById(jobId).get());
-			return "Initiated cancel of the jobId";
+			return "Initiated cancel of the jobId: " + jobId;
 		} catch (Exception e) {
 			return "Cancel request on " + jobId + " failed";
 		}

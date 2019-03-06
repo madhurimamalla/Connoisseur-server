@@ -16,26 +16,34 @@ public class JobScheduler {
 
 	JobService jobService;
 
-	private JobExecutor jobExecutor;
+	private static JobExecutor jobExecutor = null;
 
 	private static JobScheduler instance = null;
 
 	private Thread t1;
 
-	public static JobScheduler getInstance(JobService jobService, MovieService movieService) {
+	synchronized public static JobScheduler getInstance(JobService jobService, MovieService movieService) {
 		if (instance == null) {
-			jobService.cleanUpJobs();
+			LOG.info("Scheduler instance created");
+			// TODO Add this when the Application is launched
+			// jobService.cleanUpJobs();
 			instance = new JobScheduler(jobService, movieService);
 		}
 		return instance;
-
 	}
 
 	private JobScheduler(JobService jobService, MovieService movieService) {
 		this.jobService = jobService;
-		jobExecutor = new JobExecutor(jobService, movieService);
+		jobExecutor = getInstanceOfJobExecutor(jobService, movieService);
 		t1 = new Thread(jobExecutor);
 		t1.start();
+	}
+
+	private static JobExecutor getInstanceOfJobExecutor(JobService jobService, MovieService movieService) {
+		if (jobExecutor == null) {
+			jobExecutor = new JobExecutor(jobService, movieService);
+		}
+		return jobExecutor;
 	}
 
 	/**
@@ -75,6 +83,7 @@ public class JobScheduler {
 
 	/**
 	 * This will attempt to cancel a job
+	 * 
 	 * @param job
 	 */
 	public void cancel(JobHistory job) {
@@ -82,6 +91,7 @@ public class JobScheduler {
 			/**
 			 * Cancel a specific job
 			 */
+			LOG.info("JobScheduler will try to propogate the cancel call to JobExecutor");
 			if (jobExecutor != null) {
 				jobExecutor.cancelJob();
 			}
@@ -89,6 +99,8 @@ public class JobScheduler {
 			/**
 			 * Update the status to be cancelled
 			 */
+			LOG.info("This job isn't running yet so can just set the status to CANCELLED so"
+					+ " it wouldn't be picked up by the JobExecutor");
 			jobService.updateJobStatus(job.getJobId(), JobState.CANCELLED);
 		}
 	}
